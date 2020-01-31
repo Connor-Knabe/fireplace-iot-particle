@@ -78,18 +78,18 @@ void loop(){
     char buff[64];
     int len = 64;
     
+    //check for physical fireplace switch to turn on/off
     if (digitalRead(fireplaceSwitch) == LOW){
         if(!fireplaceSwitchNeedsToTurnOn){
             pinOff(relaySwitch);
-            fireplaceSwitchNeedsToTurnOn = true;
         }
     } else if(digitalRead(fireplaceSwitch) == HIGH) {
         if(fireplaceSwitchNeedsToTurnOn){
             pinOn(relaySwitch);
-            fireplaceSwitchNeedsToTurnOn = false;
         }
     }
     
+    //send alert if fireplace is on/off
     unsigned long nowCheck = millis();
     if ((nowCheck - lastTimeCheck) >=  30 * 1000) {
     	lastTimeCheck = nowCheck;
@@ -106,32 +106,31 @@ void loop(){
         }
     }
     
-
-    /* process incoming connections one at a time forever */
-    webserver.processConnection(buff, &len);
-    
+    //needs to turn off after delay?
     unsigned long now = millis();
     if ((now - lastTime) >=  delayMins * 60 * 1000) {
     	lastTime = now;
         if(relaySwitchTimedNeedsToTurnOff){
-            relaySwitchTimedNeedsToTurnOff = false;
             pinOff(relaySwitch);
         }
     }
+
+    //process incoming connections one at a time forever
+    webserver.processConnection(buff, &len);
 }
 
 int pinOn(int pin){
     if (digitalRead(pin) == HIGH){
-        // Particle.publish("fireplace-on", NULL, 60, PRIVATE);    
-        digitalWrite(pin, LOW);  
+        digitalWrite(pin, LOW); 
+        fireplaceSwitchNeedsToTurnOn = false; 
     }
     return 1;
 }
 
 int pinOff(int pin){
     if (digitalRead(pin) == LOW){
-        // Particle.publish("fireplace-off", NULL, 60, PRIVATE);    
         digitalWrite(pin, HIGH); 
+        fireplaceSwitchNeedsToTurnOn = true;
     }
     return 1;
 }
