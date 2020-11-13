@@ -127,6 +127,7 @@ void loop(){
 
 int pinOn(int pin){
     if (digitalRead(pin) == HIGH){
+        fireplaceSwitchNeedsToTurnOn = true;
         digitalWrite(pin, LOW);  
     }
     return 1;
